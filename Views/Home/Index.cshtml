@@ -1,0 +1,306 @@
+﻿@model IEnumerable<PlantShop.Models.Plant>
+
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+<div class="container mt-4 animate__animated animate__fadeIn">
+    <div class="row">
+        <div class="col-lg-3 mb-4">
+            <div class="card shadow-sm sidebar-categories">
+                <div class="card-header bg-primary text-white fw-bold">
+                    <i class="bi bi-tags"></i> Danh mục
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item @(ViewBag.SelectedCategoryId == null ? "active" : "")">
+                        <a href="@Url.Action("Index", new { page = 1 })"
+                            class="text-decoration-none @(ViewBag.SelectedCategoryId == null ? "text-primary fw-bold" : "")">Tất
+                            cả</a>
+                    </li>
+                    @foreach (var cat in ViewBag.Categories)
+                    {
+                        <li class="list-group-item @(ViewBag.SelectedCategoryId == cat.Id ? "active" : "")">
+                            <a href="@Url.Action("Index", new { categoryId = cat.Id, page = 1 })"
+                                class="text-decoration-none @(ViewBag.SelectedCategoryId == cat.Id ? "text-primary fw-bold" : "")">
+                                <i class="bi bi-tag"></i> @cat.Name
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+        <div class="col-lg-9">
+            <div class="main-header animate__animated animate__fadeInDown">
+                <h1><i class="bi bi-flower1"></i> Cửa hàng cây cảnh đẹp</h1>
+                <p>Khám phá những loại cây cảnh tuyệt đẹp, mang thiên nhiên vào không gian sống của bạn!</p>
+            </div>
+            <div class="row">
+                @foreach (var item in Model)
+                {
+                    <div class="col-lg-4 col-md-6 col-12 d-flex">
+                        <div class="card plant-card w-100 animate__animated animate__fadeInUp">
+                            <img src="@item.ImageUrl" class="card-img-top" alt="@item.Name">
+                            <div class="card-body d-flex flex-column">
+                                <div class="plant-title mb-1"><i class="bi bi-leaf"></i> @item.Name</div>
+                                <div class="plant-price mb-1"><i class="bi bi-cash-coin"></i> @item.Price.ToString("N0") VNĐ
+                                </div>
+                                <div class="plant-category mb-1"><i class="bi bi-tag"></i> @item.Category.Name</div>
+                                <div class="plant-stock mb-1"><i class="bi bi-box"></i> Tồn kho: @item.Stock</div>
+                                <div class="plant-desc flex-grow-1">@item.Description</div>
+                                <div class="d-flex gap-2 mt-2">
+                                    <a asp-action="Details" asp-route-id="@item.Id"
+                                        class="btn btn-outline-primary flex-fill">
+                                        <i class="bi bi-eye"></i> Chi tiết
+                                    </a>
+                                    <form asp-controller="Cart" asp-action="AddToCart" method="post"
+                                        class="add-to-cart-form flex-fill">
+                                        <input type="hidden" name="plantId" value="@item.Id" />
+                                        <div class="input-group">
+                                            <input type="number" name="quantity" value="1" 
+                                                min="1" max="@(item.Stock > 0 ? item.Stock : 1)"
+                                                class="form-control quantity-input"
+                                                style="border-radius: 8px 0 0 8px; width: 70px;"
+                                                @(item.Stock <= 0 ? "disabled" : "")>
+                                            <button type="submit" class="btn btn-gradient"
+                                                style="border-radius: 0 8px 8px 0;"
+                                                @(item.Stock <= 0 ? "disabled" : "")>
+                                                <i class="bi bi-cart-plus"></i> Thêm
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            @if (ViewBag.TotalPages > 1)
+            {
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                        @if (ViewBag.HasPreviousPage)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="@Url.Action("Index", new { page = ViewBag.CurrentPage - 1 })"
+                                    aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                        }
+                        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("Index", new { page = i })">@i</a>
+                            </li>
+                        }
+                        @if (ViewBag.HasNextPage)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="@Url.Action("Index", new { page = ViewBag.CurrentPage + 1 })"
+                                    aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            }
+        </div>
+    </div>
+
+    @* Phần gợi ý sản phẩm cho người dùng đăng nhập *@
+   @if (Context.Session.GetInt32("UserId") != null)
+{
+    var recommendedProducts = ViewBag.RecommendedProducts as List<PlantShop.Models.Plant>;
+
+    if (recommendedProducts != null && recommendedProducts.Any())
+    {
+        <div class="recommendation-section mt-5 py-4">
+            <div class="section-header text-center mb-4">
+                <h2 class="section-title"><i class="bi bi-stars"></i> SẢN PHẨM GỢI Ý <i class="bi bi-stars"></i></h2>
+                <div class="divider">
+                    <span></span>
+                </div>
+                <p class="text-muted">Dựa trên lịch sử mua hàng và thói quen của bạn</p>
+            </div>
+
+            <div class="row">
+                @foreach (var product in recommendedProducts)
+                {
+                    <div class="col-md-2 col-sm-4 mb-4">
+                        <div class="card recommendation-card h-100 shadow-sm">
+                            <div class="recommendation-badge">
+                                <i class="bi bi-magic"></i> Gợi ý
+                            </div>
+                            <img src="@product.ImageUrl" class="card-img-top recommendation-img" alt="@product.Name">
+                            <div class="card-body p-3">
+                                <h6 class="card-title text-truncate">@product.Name</h6>
+                                <p class="card-text text-danger fw-bold mb-2">@product.Price.ToString("N0") VNĐ</p>
+                                <div class="d-grid">
+                                    <a href="javascript:void(0)" class="btn btn-sm btn-outline-primary add-to-cart-btn" 
+                                        data-id="@product.Id" data-name="@product.Name">
+                                        <i class="bi bi-cart-plus"></i> Thêm vào giỏ
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="recommendation-section mt-5 py-4">
+            <div class="section-header text-center mb-4">
+                <h2 class="section-title"><i class="bi bi-info-circle"></i> CHƯA CÓ SẢN PHẨM GỢI Ý</h2>
+                <div class="divider">
+                    <span></span>
+                </div>
+                <p class="text-muted">Hãy mua thêm sản phẩm để nhận được gợi ý phù hợp với sở thích của bạn</p>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div class="recommendation-section mt-5 py-4">
+        <div class="section-header text-center mb-4">
+            <h2 class="section-title"><i class="bi bi-lock"></i> ĐĂNG NHẬP ĐỂ NHẬN GỢI Ý</h2>
+            <div class="divider">
+                <span></span>
+            </div>
+            <p class="text-muted">Vui lòng đăng nhập để nhận các gợi ý sản phẩm phù hợp với bạn</p>
+        </div>
+    </div>
+}
+</div>
+
+@section Styles {
+    <style>
+        .recommendation-section {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            position: relative;
+            margin-top: 50px;
+        }
+        
+        .section-title {
+            color: #2A8D5C;
+            font-weight: 700;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .divider {
+            width: 100%;
+            text-align: center;
+            margin: 15px 0;
+        }
+        
+        .divider span {
+            display: inline-block;
+            width: 50px;
+            height: 3px;
+            background-color: #2A8D5C;
+        }
+        
+        .recommendation-card {
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .recommendation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        .recommendation-img {
+            height: 180px;
+            object-fit: cover;
+            width: 100%;
+            object-position: center;
+        }
+        
+        .recommendation-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #ff6b6b;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            z-index: 2;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Xử lý thêm vào giỏ hàng từ phần gợi ý sản phẩm
+            $('.add-to-cart-btn').on('click', function () {
+                var plantId = $(this).data('id');
+                var plantName = $(this).data('name');
+                var button = $(this);
+                
+                // Hiệu ứng nút đang xử lý
+                button.html('<i class="bi bi-hourglass-split"></i> Đang thêm...');
+                button.prop('disabled', true);
+                
+                $.ajax({
+                    url: '/Cart/AddToCart',
+                    type: 'POST',
+                    data: { plantId: plantId, quantity: 1 },
+                    success: function (response) {
+                        if (response.success) {
+                            // Cập nhật số lượng sản phẩm trong giỏ hàng
+                            $('.cart-count').text(response.count);
+                            
+                            // Hiệu ứng thông báo thành công
+                            button.html('<i class="bi bi-check-circle"></i> Đã thêm');
+                            button.removeClass('btn-gradient').addClass('btn-success');
+                            
+                            // Hiển thị thông báo
+                            if ($('#cartToast').length) {
+                                var toast = new bootstrap.Toast(document.getElementById('cartToast'));
+                                $('#cartToastBody').text('Đã thêm sản phẩm "' + plantName + '" vào giỏ hàng');
+                                toast.show();
+                            } else {
+                                // Hiển thị thông báo nếu không có toast
+                                alert('Đã thêm sản phẩm "' + plantName + '" vào giỏ hàng');
+                            }
+                            
+                            // Khôi phục trạng thái nút sau 2 giây
+                            setTimeout(function() {
+                                button.html('<i class="bi bi-cart-plus"></i> Thêm');
+                                button.removeClass('btn-success').addClass('btn-gradient');
+                                button.prop('disabled', false);
+                            }, 2000);
+                        }
+                    },
+                    error: function (xhr) {
+                        // Hiển thị lỗi
+                        button.html('<i class="bi bi-exclamation-circle"></i> Lỗi');
+                        button.removeClass('btn-gradient').addClass('btn-danger');
+                        
+                        // Thông báo lỗi
+                        alert(xhr.responseText || 'Có lỗi xảy ra khi thêm vào giỏ hàng');
+                        
+                        // Khôi phục trạng thái nút sau 2 giây
+                        setTimeout(function() {
+                            button.html('<i class="bi bi-cart-plus"></i> Thêm');
+                            button.removeClass('btn-danger').addClass('btn-gradient');
+                            button.prop('disabled', false);
+                        }, 2000);
+                    }
+                });
+            });
+        });
+    </script>
+}

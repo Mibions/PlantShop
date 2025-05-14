@@ -1,0 +1,119 @@
+@model PlantShop.Models.User
+
+@{
+    ViewData["Title"] = "Đăng ký";
+}
+
+<style>
+    .register-card {
+        border-radius: 18px;
+        box-shadow: 0 4px 24px rgba(45, 91, 227, 0.08);
+        background: #fff;
+        margin-top: 48px;
+        margin-bottom: 48px;
+    }
+
+    .card-header {
+        background: #f7faff;
+        border-bottom: 1px solid #e0e7ef;
+        font-weight: 600;
+        color: #2d5be3;
+    }
+
+    .btn-primary {
+        background: linear-gradient(90deg, #2dbe60 0%, #2d5be3 100%);
+        border: none;
+        font-weight: 600;
+        letter-spacing: 1px;
+        transition: box-shadow 0.2s;
+        box-shadow: 0 2px 8px rgba(45, 91, 227, 0.08);
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(90deg, #2d5be3 0%, #2dbe60 100%);
+        box-shadow: 0 4px 16px rgba(45, 91, 227, 0.15);
+    }
+
+    .form-label {
+        color: #2d5be3;
+        font-weight: 500;
+    }
+</style>
+
+<div class="container animate__animated animate__fadeIn">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card register-card animate__animated animate__fadeInUp">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="bi bi-person-plus"></i> Đăng ký tài khoản</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Register" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Username" class="form-label"><i class="bi bi-person"></i> Tên đăng
+                                    nhập</label>
+                                <input asp-for="Username" class="form-control" />
+                                <span asp-validation-for="Username" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Password" class="form-label"><i class="bi bi-lock"></i> Mật khẩu</label>
+                                <input asp-for="Password" class="form-control" />
+                                <span asp-validation-for="Password" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="FullName" class="form-label"><i class="bi bi-person-badge"></i> Họ và
+                                    tên</label>
+                                <input asp-for="FullName" class="form-control" />
+                                <span asp-validation-for="FullName" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Email" class="form-label"><i class="bi bi-envelope"></i> Email</label>
+                                <input asp-for="Email" class="form-control" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="PhoneNumber" class="form-label"><i class="bi bi-telephone"></i> Số điện
+                                    thoại</label>
+                                <input asp-for="PhoneNumber" class="form-control" />
+                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Address" class="form-label"><i class="bi bi-geo-alt"></i> Địa
+                                    chỉ</label>
+                                <input asp-for="Address" class="form-control" />
+                                <span asp-validation-for="Address" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-animated"><i class="bi bi-person-plus"></i>
+                                Đăng ký</button>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-3">
+                        <p>Đã có tài khoản? <a asp-action="Login">Đăng nhập</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

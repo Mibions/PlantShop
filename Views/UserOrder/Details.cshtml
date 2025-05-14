@@ -1,0 +1,153 @@
+@model PlantShop.Models.Order
+
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+}
+
+<style>
+    .order-detail-card {
+        border-radius: 18px;
+        box-shadow: 0 4px 24px rgba(45, 91, 227, 0.08);
+        background: #fff;
+        margin-bottom: 24px;
+    }
+
+    .order-detail-title {
+        color: #2d5be3;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    .badge {
+        font-size: 1em;
+        padding: 0.5em 1em;
+        border-radius: 8px;
+        font-weight: 500;
+        letter-spacing: 1px;
+    }
+
+    .btn-secondary {
+        font-weight: 600;
+        letter-spacing: 1px;
+        border-radius: 8px;
+        transition: box-shadow 0.2s;
+        box-shadow: 0 2px 8px rgba(45, 91, 227, 0.08);
+    }
+
+    .btn-secondary:hover {
+        box-shadow: 0 4px 16px rgba(45, 91, 227, 0.15);
+    }
+
+    .img-thumbnail {
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(45, 91, 227, 0.10);
+    }
+</style>
+
+<div class="container mt-4 animate__animated animate__fadeIn">
+    <div class="row">
+        <div class="col-md-8">
+            <h2 class="order-detail-title mb-4 animate__animated animate__fadeInDown"><i class="bi bi-receipt"></i> Chi
+                tiết đơn hàng #@Model.Id</h2>
+            <div class="card mb-4 order-detail-card animate__animated animate__fadeInUp">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-info-circle"></i> Thông tin đơn hàng</h5>
+                    <dl class="row">
+                        <dt class="col-sm-4"><i class="bi bi-calendar"></i> Ngày đặt:</dt>
+                        <dd class="col-sm-8">@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                        <dt class="col-sm-4"><i class="bi bi-flag"></i> Trạng thái:</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.Status == OrderStatus.Pending)
+                            {
+                                <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split"></i> Chờ xử
+                                    lý</span>
+                            }
+                            else if (Model.Status == OrderStatus.Processing)
+                            {
+                                <span class="badge bg-info text-dark"><i class="bi bi-gear"></i> Đang xử lý</span>
+                            }
+                            else if (Model.Status == OrderStatus.Shipped)
+                            {
+                                <span class="badge bg-primary"><i class="bi bi-truck"></i> Đang giao hàng</span>
+                            }
+                            else if (Model.Status == OrderStatus.Delivered)
+                            {
+                                <span class="badge bg-success"><i class="bi bi-check-circle"></i> Đã giao hàng</span>
+                            }
+                            else if (Model.Status == OrderStatus.Cancelled)
+                            {
+                                <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Đã hủy</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-4"><i class="bi bi-cash-coin"></i> Tổng tiền:</dt>
+                        <dd class="col-sm-8">@Model.TotalAmount.ToString("N0") đ</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="card order-detail-card animate__animated animate__fadeInUp">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-box-seam"></i> Sản phẩm đã đặt</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Sản phẩm</th>
+                                    <th>Giá</th>
+                                    <th>Số lượng</th>
+                                    <th>Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.OrderDetails)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="@item.Plant.ImageUrl" alt="@item.Plant.Name"
+                                                    class="img-thumbnail me-2" style="width: 50px;">
+                                                @item.Plant.Name
+                                            </div>
+                                        </td>
+                                        <td>@item.UnitPrice.ToString("N0") đ</td>
+                                        <td>@item.Quantity</td>
+                                        <td>@((item.UnitPrice * item.Quantity).ToString("N0")) đ</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card order-detail-card animate__animated animate__fadeInUp">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-truck"></i> Thông tin giao hàng</h5>
+                    <dl class="row">
+                        <dt class="col-sm-4"><i class="bi bi-person"></i> Họ tên:</dt>
+                        <dd class="col-sm-8">@Model.CustomerName</dd>
+
+                        <dt class="col-sm-4"><i class="bi bi-envelope"></i> Email:</dt>
+                        <dd class="col-sm-8">@Model.Email</dd>
+
+                        <dt class="col-sm-4"><i class="bi bi-telephone"></i> Điện thoại:</dt>
+                        <dd class="col-sm-8">@Model.PhoneNumber</dd>
+
+                        <dt class="col-sm-4"><i class="bi bi-geo-alt"></i> Địa chỉ:</dt>
+                        <dd class="col-sm-8">@Model.ShippingAddress</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a asp-action="Index" class="btn btn-secondary btn-animated">
+            <i class="bi bi-arrow-left"></i> Quay lại
+        </a>
+    </div>
+</div>

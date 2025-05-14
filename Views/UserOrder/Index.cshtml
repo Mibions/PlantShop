@@ -1,0 +1,113 @@
+@model IEnumerable<PlantShop.Models.Order>
+
+@{
+    ViewData["Title"] = "Lịch sử đơn hàng";
+}
+
+<style>
+    .order-history-table {
+        border-radius: 18px;
+        box-shadow: 0 4px 24px rgba(45, 91, 227, 0.08);
+        background: #fff;
+        overflow: hidden;
+        margin-bottom: 32px;
+    }
+
+    .order-history-table th {
+        background: #f7faff;
+        color: #2d5be3;
+        font-weight: 700;
+        border-top: none;
+    }
+
+    .order-history-table td,
+    .order-history-table th {
+        vertical-align: middle;
+    }
+
+    .btn-primary {
+        background: linear-gradient(90deg, #2dbe60 0%, #2d5be3 100%);
+        border: none;
+        font-weight: 600;
+        letter-spacing: 1px;
+        transition: box-shadow 0.2s;
+        box-shadow: 0 2px 8px rgba(45, 91, 227, 0.08);
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(90deg, #2d5be3 0%, #2dbe60 100%);
+        box-shadow: 0 4px 16px rgba(45, 91, 227, 0.15);
+    }
+
+    .badge {
+        font-size: 1em;
+        padding: 0.5em 1em;
+        border-radius: 8px;
+        font-weight: 500;
+        letter-spacing: 1px;
+    }
+</style>
+
+<div class="container mt-4 animate__animated animate__fadeIn">
+    <h2 class="mb-4 animate__animated animate__fadeInDown"><i class="bi bi-clock-history"></i> Lịch sử đơn hàng</h2>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info animate__animated animate__fadeInUp">
+            <i class="bi bi-info-circle"></i> Bạn chưa có đơn hàng nào.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive order-history-table animate__animated animate__fadeInUp">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>Mã đơn hàng</th>
+                        <th>Ngày đặt</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in Model)
+                    {
+                        <tr>
+                            <td><i class="bi bi-hash"></i> @order.Id</td>
+                            <td><i class="bi bi-calendar"></i> @order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td><i class="bi bi-cash-coin"></i> @order.TotalAmount.ToString("N0") đ</td>
+                            <td>
+                                @if (order.Status == OrderStatus.Pending)
+                                {
+                                    <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split"></i> Chờ xử lý</span>
+                                }
+                                else if (order.Status == OrderStatus.Processing)
+                                {
+                                    <span class="badge bg-info text-dark"><i class="bi bi-gear"></i> Đang xử lý</span>
+                                }
+                                else if (order.Status == OrderStatus.Shipped)
+                                {
+                                    <span class="badge bg-primary"><i class="bi bi-truck"></i> Đang giao hàng</span>
+                                }
+                                else if (order.Status == OrderStatus.Delivered)
+                                {
+                                    <span class="badge bg-success"><i class="bi bi-check-circle"></i> Đã giao hàng</span>
+                                }
+                                else if (order.Status == OrderStatus.Cancelled)
+                                {
+                                    <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Đã hủy</span>
+                                }
+                            </td>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@order.Id" class="btn btn-sm btn-primary btn-animated">
+                                    <i class="bi bi-eye"></i> Chi tiết
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

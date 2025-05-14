@@ -1,0 +1,241 @@
+@model List<PlantShop.Controllers.CartItem>
+
+@{
+    ViewData["Title"] = "Giỏ hàng";
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4">Giỏ hàng</h1>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            Giỏ hàng của bạn đang trống. <a asp-controller="Home" asp-action="Index">Tiếp tục mua sắm</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th>Giá</th>
+                        <th>Số lượng</th>
+                        <th>Tổng</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="@item.ImageUrl" alt="@item.PlantName"
+                                        style="width: 50px; height: 50px; object-fit: cover;" class="me-3">
+                                    <span>@item.PlantName</span>
+                                </div>
+                            </td>
+                            <td>@item.Price.ToString("N0") VNĐ</td>
+                            <td>
+                                <input type="number" name="quantity" value="@item.Quantity" min="1"
+                                    class="form-control form-control-sm quantity-input" style="width: 70px"
+                                    data-plant-id="@item.PlantId">
+                            </td>
+                            <td>@item.Total.ToString("N0") VNĐ</td>
+                            <td>
+                                <form asp-action="RemoveFromCart" method="post" class="d-inline remove-from-cart-form">
+                                    <input type="hidden" name="plantId" value="@item.PlantId" />
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="text-end"><strong>Tổng cộng:</strong></td>
+                        <td><strong>@Model.Sum(i => i.Total).ToString("N0") VNĐ</strong></td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left"></i> Tiếp tục mua sắm
+            </a>
+            <a asp-controller="Order" asp-action="Checkout" class="btn btn-success">
+                <i class="bi bi-credit-card"></i> Thanh toán
+            </a>
+        </div>
+
+        <!-- Phần gợi ý sản phẩm -->
+        <div class="mt-5">
+            <h3>Có thể bạn cũng thích</h3>
+            <div class="recommendations-container">
+                <div class="row" id="recommendations-row">
+                    <div class="col-12 text-center py-4">
+                        <div class="spinner-border text-success" role="status">
+                            <span class="visually-hidden">Đang tải...</span>
+                        </div>
+                        <p class="mt-2">Đang tìm gợi ý sản phẩm dựa trên lịch sử mua hàng của bạn...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Xử lý form xóa sản phẩm
+            $('.remove-from-cart-form').on('submit', function (e) {
+                e.preventDefault();
+                var form = $(this);
+                var row = form.closest('tr');
+
+                if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
+                    $.ajax({
+                        url: form.attr('action'),
+                        type: 'POST',
+                        data: form.serialize(),
+                        success: function (response) {
+                            if (response.success) {
+                                row.fadeOut(400, function () {
+                                    $(this).remove();
+                                    updateCartTotal();
+                                    updateCartCount();
+                                    if ($('tbody tr').length === 0) {
+                                        location.reload();
+                                    }
+                                });
+                            }
+                        },
+                        error: function () {
+                            alert('Có lỗi xảy ra khi xóa sản phẩm');
+                        }
+                    });
+                }
+            });
+
+            // Xử lý cập nhật số lượng động
+            $('.quantity-input').on('change', function () {
+                var input = $(this);
+                var plantId = input.data('plant-id');
+                var quantity = input.val();
+                if (quantity < 1) {
+                    input.val(1);
+                    quantity = 1;
+                }
+                $.ajax({
+                    url: '/Cart/UpdateQuantity',
+                    type: 'POST',
+                    data: { plantId: plantId, quantity: quantity },
+                    success: function (response) {
+                        if (response.success) {
+                            // Cập nhật tổng từng dòng
+                            var row = input.closest('tr');
+                            row.find('td:eq(3)').text(response.itemTotal.toLocaleString('vi-VN') + ' VNĐ');
+                            // Cập nhật tổng tiền
+                            $('tfoot strong:last').text(response.total.toLocaleString('vi-VN') + ' VNĐ');
+                            // Cập nhật số lượng sản phẩm trên icon
+                            $('.cart-count').text(response.count);
+                        }
+                    },
+                    error: function () {
+                        alert('Có lỗi xảy ra khi cập nhật số lượng');
+                    }
+                });
+            });
+
+            // Hàm cập nhật tổng tiền
+            function updateCartTotal() {
+                var total = 0;
+                $('tbody tr').each(function () {
+                    var price = parseFloat($(this).find('td:eq(1)').text().replace(/[^0-9.-]+/g, ''));
+                    var quantity = parseInt($(this).find('input[name="quantity"]').val());
+                    total += price * quantity;
+                });
+                $('tfoot strong:last').text(total.toLocaleString('vi-VN') + ' VNĐ');
+            }
+
+            // Hàm cập nhật số lượng sản phẩm trên icon giỏ hàng
+            function updateCartCount() {
+                $.get('/Cart/GetCartCount', function (count) {
+                    $('.cart-count').text(count);
+                });
+            }
+
+            // Lấy gợi ý sản phẩm
+            loadRecommendations();
+
+            function loadRecommendations() {
+                $.ajax({
+                    url: '/Recommendation/GetRecommendations',
+                    type: 'GET',
+                    success: function (data) {
+                        // Xóa spinner loading
+                        $('#recommendations-row').empty();
+
+                        if (data && data.length > 0) {
+                            // Hiển thị sản phẩm gợi ý
+                            data.forEach(function (product) {
+                                var card = `
+                                            <div class="col-md-3 col-sm-6 mb-4">
+                                                <div class="card product-card h-100">
+                                                    <img src="${product.imageUrl}" class="card-img-top product-img" alt="${product.name}">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">${product.name}</h5>
+                                                        <p class="card-text text-danger fw-bold">${product.price.toLocaleString('vi-VN')} VNĐ</p>
+                                                        <p class="card-text text-muted">${product.category || 'Không có danh mục'}</p>
+                                                        <button class="btn btn-sm btn-primary add-to-cart-btn" data-id="${product.id}">
+                                                            <i class="bi bi-cart-plus"></i> Thêm vào giỏ
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        `;
+                                $('#recommendations-row').append(card);
+                            });
+
+                            // Xử lý sự kiện click nút thêm vào giỏ hàng
+                            $('.add-to-cart-btn').on('click', function () {
+                                var plantId = $(this).data('id');
+                                $.ajax({
+                                    url: '/Cart/AddToCart',
+                                    type: 'POST',
+                                    data: { plantId: plantId, quantity: 1 },
+                                    success: function (response) {
+                                        if (response.success) {
+                                            // Hiển thị thông báo
+                                            var toast = new bootstrap.Toast(document.getElementById('cartToast'));
+                                            toast.show();
+
+                                            // Cập nhật số lượng sản phẩm
+                                            $('.cart-count').text(response.count);
+                                        }
+                                    },
+                                    error: function (xhr) {
+                                        alert(xhr.responseText || 'Có lỗi xảy ra khi thêm vào giỏ hàng');
+                                    }
+                                });
+                            });
+                        } else {
+                            // Không có gợi ý
+                            $('#recommendations-row').html('<div class="col-12"><p class="text-muted">Không có gợi ý sản phẩm phù hợp.</p></div>');
+                        }
+                    },
+                    error: function () {
+                        $('#recommendations-row').html('<div class="col-12"><p class="text-danger">Không thể tải gợi ý sản phẩm.</p></div>');
+                    }
+                });
+            }
+        });
+    </script>
+}

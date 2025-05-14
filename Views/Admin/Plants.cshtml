@@ -1,0 +1,96 @@
+@model IEnumerable<PlantShop.Models.Plant>
+@{
+    ViewData["Title"] = "Quản lý sản phẩm";
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4><i class="bi bi-flower1"></i> Quản lý sản phẩm</h4>
+    <a asp-action="CreatePlant" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Thêm sản phẩm
+    </a>
+</div>
+
+<div class="card admin-card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Hình ảnh</th>
+                        <th>Tên sản phẩm</th>
+                        <th>Danh mục</th>
+                        <th>Giá</th>
+                        <th>Tồn kho</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.Id</td>
+                            <td>
+                                <img src="@item.ImageUrl" alt="@item.Name"
+                                    style="width: 50px; height: 50px; object-fit: cover;">
+                            </td>
+                            <td>@item.Name</td>
+                            <td>@item.Category?.Name</td>
+                            <td>@item.Price.ToString("N0") VNĐ</td>
+                            <td>@item.Stock</td>
+                            <td>
+                                <span class="badge bg-@(item.IsActive ? "success" : "danger")">
+                                    @(item.IsActive ? "Đang bán" : "Ngừng bán")
+                                </span>
+                            </td>
+                            <td>
+                                <a asp-action="EditPlant" asp-route-id="@item.Id" class="btn btn-sm btn-primary"
+                                    title="Sửa">
+                                    <i class="bi bi-pencil"></i> Sửa
+                                </a>
+                                <form asp-action="DeletePlant" method="post" class="d-inline">
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <button type="submit" class="btn btn-sm btn-danger"
+                                        onclick="return confirm('Bạn có chắc muốn xóa sản phẩm này?')">
+                                        <i class="bi bi-trash"></i> Xóa
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        @if (ViewBag.TotalPages > 1)
+        {
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    @if (ViewBag.CurrentPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("Plants", new { page = ViewBag.CurrentPage - 1 })">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                    }
+                    @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                            <a class="page-link" href="@Url.Action("Plants", new { page = i })">@i</a>
+                        </li>
+                    }
+                    @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("Plants", new { page = ViewBag.CurrentPage + 1 })">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+    </div>
+</div>

@@ -1,0 +1,130 @@
+@model IEnumerable<PlantShop.Models.Order>
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4><i class="bi bi-cart"></i> Quản lý đơn hàng</h4>
+</div>
+
+<div class="card admin-card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table admin-table">
+                <thead>
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Khách hàng</th>
+                        <th>Ngày đặt</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>#@item.Id</td>
+                            <td>@item.User.FullName</td>
+                            <td>@item.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@item.TotalAmount.ToString("N0") VNĐ</td>
+                            <td>
+                                <span
+                                    class="badge bg-@(item.Status switch {
+                                                        OrderStatus.Pending => "warning",
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                OrderStatus.Processing => "info",
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                OrderStatus.Delivered => "success",
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                OrderStatus.Cancelled => "danger",
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                _ => "secondary"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                })">
+                                @item.Status
+                            </span>
+                        </td>
+                        <td>
+                            <a asp-action="OrderDetails" asp-route-id="@item.Id" class="btn btn-sm btn-primary">
+                                <i class="bi bi-eye"></i> Chi tiết
+                            </a>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-sm btn-success dropdown-toggle"
+                                    data-bs-toggle="dropdown">
+                                    <i class="bi bi-arrow-clockwise"></i> Cập nhật trạng thái
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <form asp-action="UpdateOrderStatus" method="post">
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <input type="hidden" name="status" value="@OrderStatus.Pending" />
+                                            <button type="submit" class="dropdown-item">
+                                                <i class="bi bi-hourglass"></i> Chờ xử lý
+                                            </button>
+                                        </form>
+                                    </li>
+                                    <li>
+                                        <form asp-action="UpdateOrderStatus" method="post">
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <input type="hidden" name="status" value="@OrderStatus.Processing" />
+                                            <button type="submit" class="dropdown-item">
+                                                <i class="bi bi-gear"></i> Đang xử lý
+                                            </button>
+                                        </form>
+                                    </li>
+                                    <li>
+                                        <form asp-action="UpdateOrderStatus" method="post">
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <input type="hidden" name="status" value="@OrderStatus.Delivered" />
+                                            <button type="submit" class="dropdown-item">
+                                                <i class="bi bi-check-circle"></i> Đã giao
+                                            </button>
+                                        </form>
+                                    </li>
+                                    <li>
+                                        <form asp-action="UpdateOrderStatus" method="post">
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <input type="hidden" name="status" value="@OrderStatus.Cancelled" />
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="bi bi-x-circle"></i> Hủy đơn
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                                        }
+                </tbody>
+            </table>
+        </div>
+
+        @if (ViewBag.TotalPages > 1)
+        {
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    @if (ViewBag.HasPreviousPage)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("Orders", new { page = ViewBag.CurrentPage - 1 })">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                    }
+                    @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                            <a class="page-link" href="@Url.Action("Orders", new { page = i })">@i</a>
+                        </li>
+                    }
+                    @if (ViewBag.HasNextPage)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("Orders", new { page = ViewBag.CurrentPage + 1 })">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+    </div>
+</div>

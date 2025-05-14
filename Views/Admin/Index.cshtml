@@ -1,0 +1,105 @@
+@{
+    ViewData["Title"] = "Tổng quan";
+    Layout = "_AdminLayout";
+}
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card admin-card bg-primary text-white">
+            <div class="card-body">
+                <div class="card-icon">
+                    <i class="bi bi-flower1"></i>
+                </div>
+                <h5 class="card-title">Tổng sản phẩm</h5>
+                <h2 class="card-text">@Model.TotalProducts</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card admin-card bg-success text-white">
+            <div class="card-body">
+                <div class="card-icon">
+                    <i class="bi bi-tags"></i>
+                </div>
+                <h5 class="card-title">Tổng danh mục</h5>
+                <h2 class="card-text">@Model.TotalCategories</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card admin-card bg-warning text-white">
+            <div class="card-body">
+                <div class="card-icon">
+                    <i class="bi bi-cart"></i>
+                </div>
+                <h5 class="card-title">Tổng đơn hàng</h5>
+                <h2 class="card-text">@Model.TotalOrders</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card admin-card bg-info text-white">
+            <div class="card-body">
+                <div class="card-icon">
+                    <i class="bi bi-people"></i>
+                </div>
+                <h5 class="card-title">Tổng người dùng</h5>
+                <h2 class="card-text">@Model.TotalUsers</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card admin-card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Đơn hàng gần đây</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table admin-table">
+                        <thead>
+                            <tr>
+                                <th>Mã đơn</th>
+                                <th>Khách hàng</th>
+                                <th>Ngày đặt</th>
+                                <th>Tổng tiền</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in Model.RecentOrders)
+                            {
+                                    <tr>
+                                        <td>#@order.Id</td>
+                                        <td>@order.User.FullName</td>
+                                        <td>@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td>@order.TotalAmount.ToString("N0") VNĐ</td>
+                                        <td>
+                                            <span class="badge bg-@(order.Status switch {
+                                                OrderStatus.Pending => "warning",
+                                                                                        OrderStatus.Processing => "info",
+                                                                                        OrderStatus.Delivered => "success",
+                                                                                        OrderStatus.Cancelled => "danger",
+                                                                                        _ => "secondary"
+                                                                                })">
+                                            @order.Status
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a asp-action="OrderDetails" asp-route-id="@order.Id" 
+                                           class="btn btn-sm btn-primary">
+                                            <i class="bi bi-eye"></i> Chi tiết
+                                        </a>
+                                    </td>
+                                </tr>
+                                                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 
