@@ -14,12 +14,12 @@
             <table class="table admin-table">
                 <thead>
                     <tr>
-                        <th>Mã đơn</th>
-                        <th>Khách hàng</th>
-                        <th>Ngày đặt</th>
-                        <th>Tổng tiền</th>
-                        <th>Trạng thái</th>
-                        <th>Thao tác</th>
+                        <th style="width: 5%;">Mã đơn</th>
+                        <th style="width: 20%;">Khách hàng</th>
+                        <th style="width: 10%;">Ngày đặt</th>
+                        <th style="width: 15%;">Tổng tiền</th>
+                        <th style="width: 15%;">Trạng thái</th>
+                        <th style="width: 20%;">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -33,23 +33,23 @@
                             <td>
                                 <span
                                     class="badge bg-@(item.Status switch {
-                                                        OrderStatus.Pending => "warning",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                OrderStatus.Processing => "info",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                OrderStatus.Delivered => "success",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                OrderStatus.Cancelled => "danger",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                _ => "secondary"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                })">
+                                                OrderStatus.Pending => "warning",
+                                                                                                                                                                                                                                                                                                OrderStatus.Processing => "info",
+                                                                                                                                                                                                                                                                                                OrderStatus.Delivered => "success",
+                                                                                                                                                                                                                                                                                                OrderStatus.Cancelled => "danger",
+                                                                                                                                                                                                                                                                                                _ => "secondary"
+                                                                                                                                                                                                                                                                })">
                                 @item.Status
                             </span>
                         </td>
                         <td>
-                            <a asp-action="OrderDetails" asp-route-id="@item.Id" class="btn btn-sm btn-primary">
+                            <a asp-action="OrderDetails" asp-route-id="@item.Id" class="btn btn-sm btn-primary mb-1">
                                 <i class="bi bi-eye"></i> Chi tiết
                             </a>
                             <div class="btn-group">
                                 <button type="button" class="btn btn-sm btn-success dropdown-toggle"
                                     data-bs-toggle="dropdown">
-                                    <i class="bi bi-arrow-clockwise"></i> Cập nhật trạng thái
+                                    <i class="bi bi-arrow-clockwise"></i> Cập nhật
                                 </button>
                                 <ul class="dropdown-menu">
                                     <li>
@@ -109,12 +109,48 @@
                             </a>
                         </li>
                     }
-                    @for (int i = 1; i <= ViewBag.TotalPages; i++)
-                    {
-                        <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
-                            <a class="page-link" href="@Url.Action("Orders", new { page = i })">@i</a>
-                        </li>
+
+                    @{
+                        int startPage = Math.Max(1, ViewBag.CurrentPage - 2);
+                        int endPage = Math.Min(startPage + 4, ViewBag.TotalPages);
+
+                        if (startPage > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="@Url.Action("Orders", new { page = 1 })">1</a>
+                            </li>
+
+                            if (startPage > 2)
+                            {
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            }
+                        }
+
+                        for (int i = startPage; i <= endPage; i++)
+                        {
+                            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("Orders", new { page = i })">@i</a>
+                            </li>
+                        }
+
+                        if (endPage < ViewBag.TotalPages)
+                        {
+                            if (endPage < ViewBag.TotalPages - 1)
+                            {
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            }
+
+                            <li class="page-item">
+                                <a class="page-link"
+                                    href="@Url.Action("Orders", new { page = ViewBag.TotalPages })">@ViewBag.TotalPages</a>
+                            </li>
+                        }
                     }
+
                     @if (ViewBag.HasNextPage)
                     {
                         <li class="page-item">
